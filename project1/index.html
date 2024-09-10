@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="color-scheme" content="light dark">
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css">
+        <link rel="stylesheet" href="index.css">
+        <title>CS 180 Projects</title>
+    </head>
+    <body>
+        <main class="container">
+            <h1>Project 1 - Images of the Russian Empire</h1>
+
+            <p>
+                In class, we learned about Sergei Mikhailovich Prokudin-Gorskii,
+                an early photographer who tried to take "color photographs"
+                before color photography was invented. He captured three
+                filtered exposures of the same scene onto a glass plate,
+                representing the B, G, and R channels of the image. While
+                he was unable to combine these images into a single colored
+                image in his time, the Library of Congress saved his glass
+                plate negatives and combined them digitally in the 21st
+                century.
+            </p>
+
+            <p>
+                Project 1 does just that - using the original glass plate
+                negatives from Prokudin-Gorskii, we attempt to combine the
+                three filtered exposures into a single, cohesive, colored image.
+            </p>
+
+            <h2>Approach</h2>
+
+            <p>
+                I first tackled the smaller, <code>.jpg</code> images provided
+                (<code>cathedral.jpg</code>, <code>monastery.jpg</code>, 
+                <code>tobolsk.jpg</code>) as shown below:
+
+            </p>
+
+            <article class="grid" >
+                <div class="jpg-images"><img src="images/cathedral.jpg" alt="Cathedral" width="200em"></div>
+                <div class="jpg-images"><img src="images/monastery.jpg" alt="Monastery" width="200em"></div>
+                <div class="jpg-images"><img src="images/tobolsk.jpg" alt="Tobolsk" width="200em"></div>
+            </article>
+
+            <p>
+                Following the guidelines, I divided each glass plate negatives
+                into three equal sections corresponding to the B, G, and R
+                channels. To align the images, I attempted to find the
+                optimal <code>x</code>, <code>y</code> offsets for each channel
+                relative to the B channel. Optimality can be defined by
+                several metrics, such as the L2 norm between images (which
+                did not work well in my case), or structural similarity index (SSIM)
+                from the <code>scikit-image</code> library.
+            </p>
+            <p>
+                I chose the SSIM metric, and used a displacement search
+                approach over the range of <code>-15</code> to <code>15</code>
+                pixels in both the <code>x</code> and <code>y</code> directions.
+                Whichever displacement yielded the highest SSIM score was
+                chosen as the optimal offset. Additionally, I used a naive
+                10% crop of the images to remove the black borders, which
+                helped improve the SSIM score.
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/cathedral_colorized.jpg" alt="Cathedral" width="300em">
+                    <p class="jpg-title">Cathedral</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/monastery_colorized.jpg" alt="Monastery" width="300em">
+                    <p class="jpg-title">Monastery</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/tobolsk_colorized.jpg" alt="Tobolsk" width="300em">
+                    <p class="jpg-title">Tobolsk</p>
+                </div>
+            </article>
+
+            <p>
+                However, this naive approach does not scale well for the massive <code>.tif</code>
+                images. Here, we can extend the original approach using a pyramid search
+                algorithm, which starts with running displacement search on
+                coarser versions of the images and
+                iteratively refining the search on finer versions of the images
+                with a smaller displacement search range.
+            </p>
+
+            <p>
+                Specifically, for each image, I save a list of images, starting
+                with the original, then scaling it down by a factor of 2
+                repeatedly until the image's height would be less than 100 pixels.
+                I then run the displacement search on the smallest image with
+                the original range of <code>-15</code> to <code>15</code> pixels.
+                I then scale the displacement by a factor of 2 and run the
+                displacement search on the next larger image with a range of
+                <code>-2</code> to <code>2</code> pixels. I repeat this process
+                until I reach the original image, at which point I have the
+                optimal displacement for the original image.
+            </p>
+
+            <h2>Results</h2>
+
+            <article class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/cathedral_colorized.jpg" alt="Cathedral" width="500em">
+                    <p class="jpg-title">Cathedral</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/monastery_colorized.jpg" alt="Monastery" width="500em">
+                    <p class="jpg-title">Monastery</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/tobolsk_colorized.jpg" alt="Tobolsk" width="500em">
+                    <p class="jpg-title">Tobolsk</p>
+                </div>
+
+                <div class="jpg-images">
+                    <img src="images/camel_colorized.jpg" alt="Camel" width="500em">
+                    <p class="jpg-title">Camel (New Example)</p>
+                </div>
+
+                <div class="jpg-images">
+                    <img src="images/church_colorized.jpg" alt="Church" width="500em">
+                    <p class="jpg-title">Church</p>
+                </div>
+
+                <div class="jpg-images">
+                    <img src="images/emir_colorized.jpg" alt="Emir" width="500em">
+                    <p class="jpg-title">Emir</p>
+                </div>
+
+                <div class="jpg-images">
+                    <img src="images/harvesters_colorized.jpg" alt="Harvesters" width="500em">
+                    <p class="jpg-title">Harvesters</p>
+                </div>
+
+                <div class="jpg-images">
+                    <img src="images/icon_colorized.jpg" alt="Icon" width="500em">
+                    <p class="jpg-title">Icon</p>
+                </div>
+                
+                <div class="jpg-images">
+                    <img src="images/lady_colorized.jpg" alt="Lady" width="500em">
+                    <p class="jpg-title">Lady</p>
+                </div>
+                
+                <div class="jpg-images">
+                    <img src="images/melons_colorized.jpg" alt="Melons" width="500em">
+                    <p class="jpg-title">Melons</p>
+                </div>
+                
+                <div class="jpg-images">
+                    <img src="images/mill_colorized.jpg" alt="Mill" width="500em">
+                    <p class="jpg-title">Mill (New Example)</p>
+                </div>
+
+                <div class="jpg-images">
+                    <img src="images/onion_church_colorized.jpg" alt="Onion Church" width="500em">
+                    <p class="jpg-title">Onion Church</p>
+                </div>
+
+                <div class="jpg-images">
+                    <img src="images/sculpture_colorized.jpg" alt="Sculpture" width="500em">
+                    <p class="jpg-title">Sculpture</p>
+                </div>
+
+                <div class="jpg-images">
+                    <img src="images/self_portrait_colorized.jpg" alt="Self Portrait" width="500em">
+                    <p class="jpg-title">Self Portrait</p>
+                </div>
+
+                <div class="jpg-images">
+                    <img src="images/three_generations_colorized.jpg" alt="Three Generations" width="500em">
+                    <p class="jpg-title">Three Generations</p>
+                </div>
+                
+                <div class="jpg-images">
+                    <img src="images/train_colorized.jpg" alt="Train" width="500em">
+                    <p class="jpg-title">Train</p>
+                </div>
+            </article>
+
+        </main>
+    </body>
+</html>
