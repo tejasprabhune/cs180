@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="color-scheme" content="light dark">
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css">
+        <link rel="stylesheet" href="index.css">
+        <title>CS 180 Projects</title>
+    </head>
+    <body>
+        <main class="container">
+            <h1>Project 2 - Images of the Russian Empire</h1>
+
+            <h2>Part 1: Fun with Filters</h2>
+            <h3>Part 1.1: Finite Difference Operator</h3>
+
+            <p>
+                In this section, we started by calculating the partial derivatives
+                in <code>x</code> and <code>y</code> using the finite difference
+                operator <code>[1, -1]</code> and <code>[1; -1]</code>.
+                To find the partial derivatives, we used the <code>convolve2d</code>
+                function. We then found the gradient magnitude image by taking the
+                square root of the sum of the squared partial derivatives.
+                Finally, we binarized this image by thresholding it qualitatively.
+                Here are the results:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/cameraman_orig.png" alt="cameraman" width="300em">
+                    <p class="jpg-title">Original Picture</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camera_dx.png" alt="Camera Dx" width="300em">
+                    <p class="jpg-title">Camera Dx</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camera_dy.png" alt="Camera Dy" width="300em">
+                    <p class="jpg-title">Camera Dy</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camera_grad_magn.png" alt="Camera Gradient Magnitude" width="300em">
+                    <p class="jpg-title">Camera Gradient Magnitude</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camera_grad_magn_bin.png" alt="Camera Gradient Magnitude Binarized" width="300em">
+                    <p class="jpg-title">Camera Gradient Magnitude Binarized</p>
+                </div>
+            </article>
+
+            <h3>Part 1.2: Derivative of Gaussian Operator</h3>
+
+            <article class="grid", class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/camera_gauss_dx.png" alt="Camera Gauss Dx" width="300em">
+                    <p class="jpg-title">Camera Blurred then Dx</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camera_gauss_dy.png" alt="Camera Gauss Dy" width="300em">
+                    <p class="jpg-title">Camera Blurred then Dy</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camera_gauss_grad_magn.png" alt="Camera Gauss Gradient Magnitude" width="300em">
+                    <p class="jpg-title">Camera Blurred then Gradient Magnitude</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camera_gauss_grad_magn_bin.png" alt="Camera Gauss Gradient Magnitude Binarized" width="300em">
+                    <p class="jpg-title">Camera Blurred then Gradient Magnitude Binarized</p>
+                </div>
+            </article>
+
+            <p>
+                Here, we see that the noise levels in the derivatives has gone down
+                and the edges are much more prominent and thicker than before.
+            </p>
+
+            <article class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/gauss_dx.png" alt="Gaussian Dx" width="300em">
+                    <p class="jpg-title">Gaussian Dx</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/gauss_dy.png" alt="Gauss Dy" width="300em">
+                    <p class="jpg-title">Gaussian Dy</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camera_blur_dx.png" alt="Camera Gauss Dx Applied" width="300em">
+                    <p class="jpg-title">Camera with Gaussian Blurred Dx</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camera_blur_dy.png" alt="Camera Gauss Dy Applied" width="300em">
+                    <p class="jpg-title">Camera with Gaussian Blurred Dy</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camera_blur_grad_magn.png" alt="Camera Gauss Gradient Magnitude" width="300em">
+                    <p class="jpg-title">Camera with Gaussian Blurred Gradient Magnitude</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camera_blur_grad_magn_bin.png" alt="Camera Gauss Gradient Magnitude Binarized" width="300em">
+                    <p class="jpg-title">Camera with Gaussian Blurred Gradient Magnitude Binarized</p>
+                </div>
+            </article>
+
+            <p>We can see that we get the same result as before.</p>
+
+            <h2>Part 2: Fun with Frequencies!</h2>
+            <h3>Part 2.1: Image Sharpening</h3>
+
+            <p>Progression of Sharpening:</p>
+            <article class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/taj_progression.png" alt="Taj Mahal Sharpening Progression" width="1300em">
+                    <p class="jpg-title">Taj Mahal Sharpening Progression</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/wave_progression.png" alt="Interstellar Sharpening Progression" width="1600em">
+                    <p class="jpg-title">Interstellar Wave Sharpening Progression</p>
+                </div>
+            </article>
+
+            <p>We also try blurring the image first then sharpening it. 
+                We observe that we gain more noise while having more prominent edges.
+                Other details of the wave are lost in the process.</p>
+            <article class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/wave_blur.png" alt="Wave Blur" width="600em">
+                    <p class="jpg-title">Wave Blurred</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/wave_blur_sharp.png" alt="Wave Blur Sharp" width="600em">
+                    <p class="jpg-title">Wave Blurred then Sharpened</p>
+                </div>
+            </article>
+
+            <h3>Part 2.2: Hybrid Images</h3>
+
+            <article class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/cat.jpg" alt="Cat" width="300em">
+                    <p class="jpg-title">Cat</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/derek.jpg" alt="Derek" width="300em">
+                    <p class="jpg-title">Derek</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/cat_man_hybrid.png" alt="Hybrid" width="300em">
+                    <p class="jpg-title">Cat Derek Hybrid</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/cat_man_hybrid.png" alt="Hybrid" width="100em">
+                    <p class="jpg-title">Cat Derek Hybrid</p>
+                </div>
+            </article>
+
+            <article class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/mickey_o.png" alt="Mickey O" width="300em">
+                    <p class="jpg-title">Mickey O</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/mickey_h.png" alt="Mickey Happy" width="300em">
+                    <p class="jpg-title">Happy Mickey</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/mickey_hybrid.png" alt="Hybrid" width="300em">
+                    <p class="jpg-title">Mickey Hybrid</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/mickey_hybrid.png" alt="Hybrid" width="100em">
+                    <p class="jpg-title">Mickey Hybrid</p>
+                </div>
+            </article>
+
+            <article class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/cry_no_arm.png" alt="Interstellar Crying" width="300em">
+                    <p class="jpg-title">Interstellar Crying</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/cry_arm.png" alt="Interstellar Crying With Arm" width="300em">
+                    <p class="jpg-title">Interstellar Crying With Arm</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/cry_hybrid.png" alt="Hybrid" width="300em">
+                    <p class="jpg-title">Interstellar Hybrid</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/cry_hybrid.png" alt="Hybrid" width="100em">
+                    <p class="jpg-title">Interstellar Hybrid</p>
+                </div>
+            </article>
+
+            <p>
+                In this last case, we see the expression through the hand,
+                so we can consider this a failure case. 
+            </p>
+
+            <p>
+                Additionally, for the Mickey Mouse hybrid, we can visualize
+                the intermediate frequency analysis:
+            </p>
+
+            <article class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/spectra.png" alt="Spectra" width="1600em">
+                    <p class="jpg-title">Mickey Spectra</p>
+                </div>
+            </article>
+
+            <h3>Part 2.3: Gaussian and Laplacian Stacks</h3>
+
+            <article class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/apple_lap_gauss_stack.png" alt="Apple Stack" width="1600em">
+                    <p class="jpg-title">Apple Laplacian and Gaussian Stack</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/orange_lap_gauss_stack.png" alt="orange Stack" width="1600em">
+                    <p class="jpg-title">Orange Laplacian and Gaussian Stack</p>
+                </div>
+            </article>
+            <article class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/figure.png" alt="Figure" width="800em">
+                    <p class="jpg-title">Replication of Figure 3.42 (Levels 0, 2, 4, then Summed Contributions)</p>
+                </div>
+            </article>
+
+            <h3>Part 2.4: Multiresolution Blending</h3>
+
+
+            <article class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/apple.jpeg" alt="Apple" width="400em">
+                    <p class="jpg-title">Apple</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/orange.jpeg" alt="Orange" width="400em">
+                    <p class="jpg-title">Orange</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/oraple_blend.png" alt="Oraple" width="400em">
+                    <p class="jpg-title">Oraple</p>
+                </div>
+            </article>
+
+            <article class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/young.png" alt="Young" width="300em">
+                    <p class="jpg-title">My Brother (Baby)</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/old.png" alt="Old" width="300em">
+                    <p class="jpg-title">My Brother (Older)</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/mask.png" alt="Mask" width="300em">
+                    <p class="jpg-title">My Brother (Baby Mask)</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/ojas_hybrid.png" alt="Ojas Hybrid" width="300em">
+                    <p class="jpg-title">My Brother's Age Blend</p>
+                </div>
+            </article>
+
+            <article class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/galaxy1.png" alt="galaxy 1" width="300em">
+                    <p class="jpg-title">Galaxy 1</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/galaxy2.png" alt="galaxy 2" width="300em">
+                    <p class="jpg-title">Galaxy 2</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/galaxy_hybrid.png" alt="Galaxy Hybrid" width="300em">
+                    <p class="jpg-title">Galaxy Blend</p>
+                </div>
+            </article>
+
+            <p>
+                The most important thing I learned in this project was how to 
+                apply Fourier analysis to images. This idea blew my mind and
+                I loved visualizing the Laplacian and Gaussian results especially
+                for the picture of my brother.
+            </p>
+
+        </main>
+    </body>
+</html>
