@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="color-scheme" content="light dark">
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css">
+        <link rel="stylesheet" href="index.css">
+        <title>CS 180 Projects</title>
+    </head>
+    <body>
+        <main class="container">
+            <h1>Project 4 - Image Warping and Mosaics</h1>
+
+            <h2>Part 1: Rectified Images</h2>
+
+            <p>First, I shot images according to the spec and recovered the homographies by solving the system via least squares.
+            After this, I warped the images (similar to project 3) to a square to see if my code was working:</p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/IMG_7544_rectified.jpg" width="300em">
+                </div>
+                <div class="jpg-images">
+                    <img src="images/IMG_7561_rectified.jpg" width="300em">
+                </div>
+            </article>
+
+            <p>Next, I used the Laplacian blending technique to create the mosaics.</p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/IMG_7544.JPG" width="1200em">
+                </div>
+                <div class="jpg-images">
+                    <img src="images/IMG_7546.JPG" width="1200em">
+                </div>
+                <div class="jpg-images">
+                    <img src="images/IMG_7558.JPG" width="1200em">
+                </div>
+                <div class="jpg-images">
+                    <img src="images/IMG_7559.JPG" width="1200em">
+                </div>
+                <div class="jpg-images">
+                    <img src="images/IMG_7561.JPG" width="1200em">
+                </div>
+                <div class="jpg-images">
+                    <img src="images/IMG_7562.JPG" width="1200em">
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/combined_IMG_7545.jpg" width="1200em">
+                </div>
+                <div class="jpg-images">
+                    <img src="images/combined_IMG_7558.jpg" width="1200em">
+                </div>
+                <div class="jpg-images">
+                    <img src="images/combined_IMG_7561.jpg" width="1200em">
+                </div>
+            </article>
+
+
+        </main>
+    </body>
+</html>
