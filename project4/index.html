@@ -12,61 +12,322 @@
             rel="stylesheet"
             href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css">
         <link rel="stylesheet" href="index.css">
+        <script>
+            MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+            };
+        </script>
+        <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+        </script>
+
+
         <title>CS 180 Projects</title>
     </head>
     <body>
         <main class="container">
             <h1>Project 4 - Image Warping and Mosaics</h1>
 
-            <h2>Part 1: Rectified Images</h2>
+            <h2>Shoot the Pictures</h2>
 
-            <p>First, I shot images according to the spec and recovered the homographies by solving the system via least squares.
-            After this, I warped the images (similar to project 3) to a square to see if my code was working:</p>
-
-            <article class="grid" class="jpg-section">
-                <div class="jpg-images">
-                    <img src="images/IMG_7544_rectified.jpg" width="300em">
-                </div>
-                <div class="jpg-images">
-                    <img src="images/IMG_7561_rectified.jpg" width="300em">
-                </div>
-            </article>
-
-            <p>Next, I used the Laplacian blending technique to create the mosaics.</p>
+            <p>
+                In the first part, I took some pictures both in my room as well as in San Francisco.
+                To ensure accurate homographies, the center of rotation must be held constant as the
+                camera rotates. Here are the images:
+            </p>
 
             <article class="grid" class="jpg-section">
                 <div class="jpg-images">
-                    <img src="images/IMG_7544.JPG" width="1200em">
+                    <img src="images/PartAResults/photos0.jpg" width="400em">
+                    <p></p>
+                    <img src="images/PartAResults/photos1.jpg" width="400em">
+                    <p></p>
+                    <p>Room</p>
                 </div>
                 <div class="jpg-images">
-                    <img src="images/IMG_7546.JPG" width="1200em">
+                    <img src="images/PartAResults/room0.jpg" width="400em">
+                    <p></p>
+                    <img src="images/PartAResults/room3.jpg" width="400em">
+                    <p></p>
+                    <p>Desk</p>
                 </div>
                 <div class="jpg-images">
-                    <img src="images/IMG_7558.JPG" width="1200em">
-                </div>
-                <div class="jpg-images">
-                    <img src="images/IMG_7559.JPG" width="1200em">
-                </div>
-                <div class="jpg-images">
-                    <img src="images/IMG_7561.JPG" width="1200em">
-                </div>
-                <div class="jpg-images">
-                    <img src="images/IMG_7562.JPG" width="1200em">
+                    <img src="images/PartAResults/sf0.jpg" width="400em">
+                    <p></p>
+                    <img src="images/PartAResults/sf2.jpg" width="400em">
+                    <p></p>
+                    <p>SF</p>
                 </div>
             </article>
+
+            <h2>Recover Homographies</h2>
+
+            <p>
+                Next, we want to compute a transformation between a pair of images.
+                First, we must create a manual correspondence between the images (i.e.
+                matching keypoints). For this, I used the <code>ginput</code> function
+                for a click-based interface, and matched 10 keypoints for every pair.
+                Here is an example of how these correspondences look:
+            </p>
 
             <article class="grid" class="jpg-section">
                 <div class="jpg-images">
-                    <img src="images/combined_IMG_7545.jpg" width="1200em">
-                </div>
-                <div class="jpg-images">
-                    <img src="images/combined_IMG_7558.jpg" width="1200em">
-                </div>
-                <div class="jpg-images">
-                    <img src="images/combined_IMG_7561.jpg" width="1200em">
+                    <img src="images/PartAResults/room0_3_matches.jpg" width="800em">
+                    <p></p>
+                    <p>Desk Correspondences</p>
                 </div>
             </article>
 
+            <p>
+                After we have these corresponences, we can compute a homography between
+                the two images. The method for this is as follows:
+                <br>
+                We first want to find parameters such that the following equation holds
+                for all points $x$, $y$ in image 1 such that $x'$, $y'$ are the corresponding
+                points in image 2.
+                \[
+                \begin{bmatrix}
+                a & b & c\\
+                d & e & f\\
+                g & h & 1
+                \end{bmatrix}
+                \begin{bmatrix}
+                x\\y\\1
+                \end{bmatrix}
+                = \begin{bmatrix}
+                wx'\\wy'\\w
+                \end{bmatrix}
+                \]
+
+                We can expand this matrix multiplication to reach a system of equations that reduce to:
+                \[
+                \begin{bmatrix}
+                x & y & 1 & 0 & 0 & 0 & -x x' & -y x'\\
+                0 & 0 & 0 & x & y & 1 & -xy' & -y y'
+                \end{bmatrix}
+                \begin{bmatrix}
+                a\\b\\c\\d\\e\\f\\g\\h
+                \end{bmatrix}
+                = 
+                \begin{bmatrix}
+                x'\\y'
+                \end{bmatrix}
+                \]
+
+                Using least squares, we solve for the $a$ to $g$ parameters (by stacking the first matrix and result for every correspondence), which then create
+                \[
+                H = 
+                \begin{bmatrix}
+                a & b & c\\
+                d & e & f\\
+                g & h & 1
+                \end{bmatrix}
+                \]
+            </p>
+
+            <h2>Warping Images</h2>
+
+            <p>
+                We can now use this computed homography to warp one image to the other. We use inverse warping, where we use inverse $H$
+                and use <code>LinearNDInterpolator</code> to interpolate the pixel values. This is very similar to the solution from a previous project,
+                however our polygon here is the bounding box instead of triangles.
+            </p>
+
+            <h2>Rectifying Images</h2>
+
+            <p>
+                Using the warp technique, we choose a standard box of 200x200 or 500x500 pixels and warp some preselected keypoints to this box. This can be
+                interpreted as rectifying the image, and we can see the results below:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/PartAResults/room0.jpg" height="200em">
+                    <p></p>
+                    <img src="images/PartAResults/whiteboard_rectified.jpg" height="200em">
+                    <p></p>
+                    <p>Desk Rectified</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/PartAResults/sf2.jpg" height="200em">
+                    <p></p>
+                    <img src="images/PartAResults/sf_rectified.jpg" width="500em">
+                    <p></p>
+                    <p>SF Rectified</p>
+                </div>
+            </article>
+
+            <h2>Creating Mosaics</h2>
+
+            <p>
+                The final step in Part A of this project is to create a mosaic of the two images. We can do this by first warping the second image to the first
+                image's perspective. However, this doesn't create a smooth transition between the two images. For this, we use a blending technique using
+                an alpha mask. We scale the alpha mask to represent the distance from the edge of the image (after a Gaussian pass), and weight the high and low pass filtered images
+                before adding them together. This creates a smooth transition between the two images. Here is an example of this mask:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/PartAResults/photos0_to_1.jpg" width="500em">
+                    <p></p>
+                    <p>Warped Image</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/PartAResults/photos0_to_1_dist.png" width="500em">
+                    <p></p>
+                    <p>Alpha Mask</p>
+                </div>
+            </article>
+
+            <p>
+                After this, we can blend the two images together to create a mosaic. Here are the three mosaics:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/PartAResults/photos_output.png" width="800em">
+                    <p></p>
+                    <p>Room Mosaic</p>
+                    <p></p>
+                    <img src="images/PartAResults/room_output.png" width="800em">
+                    <p></p>
+                    <p>Desk Mosaic</p>
+                    <p></p>
+                    <img src="images/PartAResults/sf_output.png" width="800em">
+                    <p></p>
+                    <p>SF Mosaic</p>
+                </div>
+            </article>
+
+            <h2>Harris Points</h2>
+
+            <p>
+                In part B, we want to automate the correspondence process. First, we use the provided code for the Harris corner detector to find general keypoints
+                in each image. Here are some examples (relative threshold: $t = 0.1$):
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/PartBResults/photos_0_scaled_harris.jpg" width="300em">
+                    <p></p>
+                    <p>Room Harris Strength</p>
+                    <img src="images/PartBResults/photos_0_scaled_corners.jpg" width="300em">
+                    <p></p>
+                    <p>Room Harris Corners</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/PartBResults/room_0_scaled_harris.jpg" width="300em">
+                    <p></p>
+                    <p>Desk Harris Strength</p>
+                    <img src="images/PartBResults/room_0_scaled_corners.jpg" width="300em">
+                    <p></p>
+                    <p>Desk Harris Corners</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/PartBResults/sf_0_scaled_harris.jpg" width="300em">
+                    <p></p>
+                    <p>SF Harris Strength</p>
+                    <img src="images/PartBResults/sf_0_scaled_corners.jpg" width="300em">
+                    <p></p>
+                    <p>SF Harris Corners</p>
+                </div>
+            </article>
+
+            <h2>Adaptive Non-Maximal Suppression (ANMS)</h2>
+
+            <p>
+                However, we want to reduce the number of keypoints to a manageable and well-distributed amount. For this, we use the Adaptive Non-Maximal Suppression algorithm.
+                We follow the provided paper, and first sort the keypoints by strength. We set every point's radius to infinity, and then iterate through the points. For each point,
+                we find the distance to the next strongest point. If this distance is less than the current point's radius, we update the radius to this distance. After this, we sort
+                the points by radius and take the top $n$ points. Here is an example:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/PartBResults/sf_0_scaled_corners.jpg" width="500em">
+                    <p></p>
+                    <p>SF Harris</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/PartBResults/sf_0_scaled_anms.jpg" width="500em">
+                    <p></p>
+                    <p>SF ANMS</p>
+                </div>
+            </article>
+
+            <h2>Feature Extraction and Matching</h2>
+
+            <p>
+                However, keypoints from one image are not matched to keypoints from another image. To do this matching, we need some way to compare
+                the keypoints. We use patch-matching using $\ell_2$ distance. We take a 40x40 patch around each keypoint, and scale it to 8x8 with normalization. We then
+                compare the patches using the $\ell_2$ distance. We can then match the keypoints by finding the closest match in the other image. Here are examples
+                of matched keypoints:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/PartBResults/photos_0_scaled_1_scaled_feat_matches.jpg" width="800em">
+                    <p></p>
+                    <p>Room Feature Matches</p>
+                    <img src="images/PartBResults/room0_scaled_3_scaled_feat_matches.jpg" width="800em">
+                    <p></p>
+                    <p>Desk Feature Matches</p>
+                    <img src="images/PartBResults/sf_0_scaled_3_scaled_feat_matches.jpg" width="800em">
+                    <p></p>
+                    <p>SF Feature Matches</p>
+                </div>
+            </article>
+
+            <h2>RANSAC</h2>
+
+            <p>
+                We already see an issue! Some of the matches in SF are incorrect. To ensure robust matching, we use the RANSAC algorithm. We randomly select 4 matches
+                and compute the homography between them. We then find the number of inliers by checking the number of matches that are within a threshold of the transformed
+                point. We repeat this process for a number of iterations, and take the homography with the most inliers. Here are the results:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/PartBResults/photos_0_scaled_1_scaled_ransac_matches.jpg" width="800em">
+                    <p></p>
+                    <p>Room RANSAC Matches</p>
+                    <img src="images/PartBResults/room_0_scaled_3_scaled_ransac_matches.jpg" width="800em">
+                    <p></p>
+                    <p>Desk RANSAC Matches</p>
+                    <img src="images/PartBResults/sf_0_scaled_3_scaled_ransac_matches.jpg" width="800em">
+                    <p></p>
+                    <p>SF RANSAC Matches</p>
+                </div>
+            </article>
+
+            <h2>Final Automated Mosaics</h2>
+
+            <p>
+                RANSAC has improved our matches, and we can now create mosaics using the automated process. Here are the results:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/PartBResults/photos_ransac_out.png" width="800em">
+                    <p></p>
+                    <p>Room Automated Mosaic</p>
+                    <img src="images/PartBResults/room_ransac_out.png" width="800em">
+                    <p></p>
+                    <p>Desk Automated Mosaic</p>
+                    <img src="images/PartBResults/sf_ransac_out.png" width="800em">
+                    <p></p>
+                    <p>SF Automated Mosaic</p>
+                </div>
+            </article>
+
+            <h2>What have I learned?</h2>
+
+            <p>
+                This project was really amazing! The coolest thing I learned in this project was the Harris corner detection algorithm,
+                which used so many concepts from both previous classes and novel ideas to create a nice corner detector.
+            </p>
 
         </main>
     </body>
