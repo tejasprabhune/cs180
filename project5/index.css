@@ -1,0 +1,21 @@
+.jpg-section {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.jpg-images {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    align-items: center;
+    flex-direction: column;
+    padding: 1em;
+    margin: auto;
+}
+
+.jpg-title {
+    padding-top: 1em;
+    margin: 0;
+}

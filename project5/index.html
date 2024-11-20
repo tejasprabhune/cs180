@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="color-scheme" content="light dark">
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css">
+        <link rel="stylesheet" href="index.css">
+        <script>
+            MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+            };
+        </script>
+        <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+        </script>
+
+
+        <title>CS 180 Projects</title>
+    </head>
+    <body>
+        <main class="container">
+            <h1>Project 5 - Diffusion!</h1>
+
+            <h2>Part A: The Power of Diffusion Models!</h2>
+
+            <h3>Part 0: Setup</h3>
+
+            <p>
+                To start working with diffusion, we want to first set up our project so that
+                we have some text embeddings and pretrained diffusion models that we can use
+                to run our experiments. We use the text prompt embeddings and DeepFloyd models
+                as specified by the project spec, and we visualize some of these here. Note
+                that we use the default seed of $180$ for all of our experiments.
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/part0_five1.png" width="400em">
+                    <p></p>
+                    <p>5 Iterations (small)</p>
+                    <p>an oil painting of a snowy mountain village</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part0_five2.png" width="400em">
+                    <p></p>
+                    <p>5 Iterations (small)</p>
+                    <p>a man wearing a hat</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part0_five3.png" width="400em">
+                    <p></p>
+                    <p>5 Iterations (small)</p>
+                    <p>a rocket ship</p>
+                </div>
+            </article>
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/part0_five1big.png" width="400em">
+                    <p></p>
+                    <p>5 Iterations</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part0_five2big.png" width="400em">
+                    <p></p>
+                    <p>5 Iterations</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part0_five3big.png" width="400em">
+                    <p></p>
+                    <p>5 Iterations</p>
+                </div>
+            </article>
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/part0_twenty1.png" width="400em">
+                    <p></p>
+                    <p>20 Iterations (small)</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part0_twenty2.png" width="400em">
+                    <p></p>
+                    <p>20 Iterations (small)</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part0_twenty3.png" width="400em">
+                    <p></p>
+                    <p>20 Iterations (small)</p>
+                </div>
+            </article>
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/part0_twenty1big.png" width="400em">
+                    <p></p>
+                    <p>20 Iterations</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part0_twenty2big.png" width="400em">
+                    <p></p>
+                    <p>20 Iterations</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part0_twenty3big.png" width="400em">
+                    <p></p>
+                    <p>20 Iterations</p>
+                </div>
+            </article>
+
+            <h3>Part 1: Sampling Loops</h3>
+
+            <h4>1.1. Implementing the Forward Process</h4>
+
+            <p>First, we implement the forward Gaussian process in diffusion. This is defined as:
+            \[
+            q(x_t|x_0) = \mathcal{N}(x_t; \sqrt{\overline{\alpha}} x_0, (1 - \overline{\alpha})I)
+            \]
+            \[
+            x_t = \sqrt{\overline{\alpha}} x_0 + \sqrt{1 - \overline{\alpha}} \epsilon, \epsilon \sim \mathcal{N}(0, 1)
+            \]
+            </p>
+
+            <p>
+                After implementing the <code>forward</code> function, we show the results for $t \in [250, 500, 750]$:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/original_campanile.png" width="400em">
+                    <p></p>
+                    <p>Original Campanile</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/campanile_noise_250.png" width="400em">
+                    <p></p>
+                    <p>$t = 250$</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/campanile_noise_500.png" width="400em">
+                    <p></p>
+                    <p>$t = 500$</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/campanile_noise_750.png" width="400em">
+                    <p></p>
+                    <p>$t = 750$</p>
+                </div>
+            </article>
+
+            <h4>1.2. Classical Denoising</h4>
+
+            <p>
+                Next, we implement the naive denoising process that we've learned
+                throughout the semester: a simple Gaussian blur filter with kernel size $9$. These are expected
+                to have poor results, but serve as our baseline:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/campanile_noise_250.png" width="400em">
+                    <img src="images/campanile_gauss_250.png" width="400em">
+                    <p></p>
+                    <p>$t = 250$</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/campanile_noise_500.png" width="400em">
+                    <img src="images/campanile_gauss_500.png" width="400em">
+                    <p></p>
+                    <p>$t = 500$</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/campanile_noise_500.png" width="400em">
+                    <img src="images/campanile_gauss_750.png" width="400em">
+                    <p></p>
+                    <p>$t = 750$</p>
+                </div>
+            </article>
+
+            <h4>1.3. One-Step Denoising</h4>
+
+            <p>
+                We can now use the pre-trained DeepFloyd diffusion model's U-Net to directly denoise the images
+                in one step. Here, we use the time-step $t$ and the prompt "a high quality photo" as conditioning inputs.
+            </p>
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/campanile_noise_250.png" width="400em">
+                    <img src="images/camp_os_250.png" width="400em">
+                    <img src="images/original_campanile.png" width="400em">
+                    <p></p>
+                    <p>$t = 250$</p>
+                    <p>Noisy, One-Step Denoised, Original</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/campanile_noise_500.png" width="400em">
+                    <img src="images/camp_os_500.png" width="400em">
+                    <img src="images/original_campanile.png" width="400em">
+                    <p></p>
+                    <p>$t = 500$</p>
+                    <p>Noisy, One-Step Denoised, Original</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/campanile_noise_500.png" width="400em">
+                    <img src="images/camp_os_750.png" width="400em">
+                    <img src="images/original_campanile.png" width="400em">
+                    <p></p>
+                    <p>$t = 750$</p>
+                    <p>Noisy, One-Step Denoised, Original</p>
+                </div>
+            </article>
+
+            <h4>1.4. Iterative Denoising</h4>
+
+            <p>
+                We achieve much better results! But at higher noise, we still run into issues
+                since we are trying to subtract a large amount of noise at once. Instead, we can use
+                an iterative process, which is how diffusion is designed to be used. Using the original
+                differential equations behind diffusion, we know that we can skip timesteps (strided),
+                which will make our computation much more efficient. To go from $x_t$ to $x_t'$, we can
+                use the following equation:
+                \[
+                x_t' = \frac{\sqrt{\overline{\alpha_{t'}}}\beta_t}{1 - \overline{\alpha_{t'}}}x_0 + \frac{\sqrt{\alpha_t}(1 - \overline{\alpha_{t'}})}{1 - \overline{\alpha_t}}x_t + v_\sigma
+                \]
+                DeepFloyd also predicts this final variance term for us, which we can use to add noise back.
+
+                We use a strided schedule skipping every 30 timesteps, and show select results below:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/camp_iter_90.png" width="400em">
+                    <p></p>
+                    <p>$t = 90$</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camp_iter_240.png" width="400em">
+                    <p></p>
+                    <p>$t = 240$</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camp_iter_390.png" width="400em">
+                    <p></p>
+                    <p>$t = 390$</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camp_iter_540.png" width="400em">
+                    <p></p>
+                    <p>$t = 540$</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camp_iter_690.png" width="400em">
+                    <p></p>
+                    <p>$t = 690$</p>
+                </div>
+            </article>
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/original_campanile.png" width="400em">
+                    <p></p>
+                    <p>Original Image</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camp_iter_final.png" width="400em">
+                    <p></p>
+                    <p>Iteratively Denoised</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camp_iter_os.png" width="400em">
+                    <p></p>
+                    <p>One-Step Denoising</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camp_iter_gauss.png" width="400em">
+                    <p></p>
+                    <p>Gaussian Denoising</p>
+                </div>
+            </article>
+
+            <h4>1.5. Diffusion Model Sampling</h4>
+
+            <p>
+                We can also generate images from scratch using this iterative denoising method! We start with pure noise at <code>i_start = 0</code>,
+                and then iteratively denoise the image. We show the results below:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/part1pt5_1.png" width="400em">
+                    <p></p>
+                    <p>Sample 1</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt5_2.png" width="400em">
+                    <p></p>
+                    <p>Sample 2</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt5_3.png" width="400em">
+                    <p></p>
+                    <p>Sample 3</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt5_4.png" width="400em">
+                    <p></p>
+                    <p>Sample 4</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt5_5.png" width="400em">
+                    <p></p>
+                    <p>Sample 5</p>
+                </div>
+            </article>
+
+            <h4>1.6. Classifier-Free Guidance (CFG)</h4>
+
+            <p>
+                To improve the image quality, we use the Classifier-Free Guidance (CFG) method. This method
+                computes two noise estimates, one conditional and one unconditional. Then the new noise estimate it:
+
+                \[
+                \epsilon = \epsilon_u + \gamma (\epsilon_c - \epsilon_u)
+                \]
+
+                The unconditional prompt is just "" and the conditional prompt is "a high quality photo". We show the results below for $\gamma = 7$:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/part1pt6_1.png" width="400em">
+                    <p></p>
+                    <p>Sample 1</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt6_2.png" width="400em">
+                    <p></p>
+                    <p>Sample 2</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt6_3.png" width="400em">
+                    <p></p>
+                    <p>Sample 3</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt6_4.png" width="400em">
+                    <p></p>
+                    <p>Sample 4</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt6_5.png" width="400em">
+                    <p></p>
+                    <p>Sample 5</p>
+                </div>
+            </article>
+
+            <h4>1.7. Image-to-Image Translation</h4>
+
+            <p>
+                We can also perform interesting edits to images using diffusion. For example, we can add some noise to the image, then
+                yank it back into the image manifold without extra conditioning. Here are some results for
+                $i_\text{start} \in [1, 3, 5, 7, 10, 20]$:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/part1pt7_camp_1.png" width="400em">
+                    <p></p>
+                    <p><code>i = 1</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_camp_2.png" width="400em">
+                    <p></p>
+                    <p><code>i = 3</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_camp_3.png" width="400em">
+                    <p></p>
+                    <p><code>i = 5</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_camp_4.png" width="400em">
+                    <p></p>
+                    <p><code>i = 7</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_camp_5.png" width="400em">
+                    <p></p>
+                    <p><code>i = 10</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_camp_6.png" width="400em">
+                    <p></p>
+                    <p><code>i = 20</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/original_campanile.png" width="400em">
+                    <p></p>
+                    <p><code>Original</code></p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/part1pt7_ball_1.png" width="400em">
+                    <p></p>
+                    <p><code>i = 1</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_ball_2.png" width="400em">
+                    <p></p>
+                    <p><code>i = 3</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_ball_3.png" width="400em">
+                    <p></p>
+                    <p><code>i = 5</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_ball_4.png" width="400em">
+                    <p></p>
+                    <p><code>i = 7</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_ball_5.png" width="400em">
+                    <p></p>
+                    <p><code>i = 10</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_ball_6.png" width="400em">
+                    <p></p>
+                    <p><code>i = 20</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/ball.png" width="400em">
+                    <p></p>
+                    <p><code>Original</code></p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/part1pt7_tree_1.png" width="400em">
+                    <p></p>
+                    <p><code>i = 1</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_tree_2.png" width="400em">
+                    <p></p>
+                    <p><code>i = 3</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_tree_3.png" width="400em">
+                    <p></p>
+                    <p><code>i = 5</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_tree_4.png" width="400em">
+                    <p></p>
+                    <p><code>i = 7</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_tree_5.png" width="400em">
+                    <p></p>
+                    <p><code>i = 10</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt7_tree_6.png" width="400em">
+                    <p></p>
+                    <p><code>i = 20</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/tree.png" width="400em">
+                    <p></p>
+                    <p><code>Original</code></p>
+                </div>
+            </article>
+
+            <h4>1.7.1. Editing Hand-Drawn and Web Images</h4>
+
+            <p>
+                We can also perform edits on hand-drawn and web images. These are interesting because they
+                start as being non-realistic and end up more natural in the image manifold. We show the results below:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/part1pt8_rose_1.png" width="400em">
+                    <p></p>
+                    <p><code>i = 1</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_rose_3.png" width="400em">
+                    <p></p>
+                    <p><code>i = 3</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_rose_5.png" width="400em">
+                    <p></p>
+                    <p><code>i = 5</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_rose_7.png" width="400em">
+                    <p></p>
+                    <p><code>i = 7</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_rose_10.png" width="400em">
+                    <p></p>
+                    <p><code>i = 10</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_rose_20.png" width="400em">
+                    <p></p>
+                    <p><code>i = 20</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/rose_og.png" width="400em">
+                    <p></p>
+                    <p><code>Original</code></p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/part1pt8_mountain_1.png" width="400em">
+                    <p></p>
+                    <p><code>i = 1</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_mountain_3.png" width="400em">
+                    <p></p>
+                    <p><code>i = 3</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_mountain_5.png" width="400em">
+                    <p></p>
+                    <p><code>i = 5</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_mountain_7.png" width="400em">
+                    <p></p>
+                    <p><code>i = 7</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_mountain_10.png" width="400em">
+                    <p></p>
+                    <p><code>i = 10</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_mountain_20.png" width="400em">
+                    <p></p>
+                    <p><code>i = 20</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/mountain.png" width="400em">
+                    <p></p>
+                    <p><code>Original</code></p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/part1pt8_face_1.png" width="400em">
+                    <p></p>
+                    <p><code>i = 1</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_face_3.png" width="400em">
+                    <p></p>
+                    <p><code>i = 3</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_face_5.png" width="400em">
+                    <p></p>
+                    <p><code>i = 5</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_face_7.png" width="400em">
+                    <p></p>
+                    <p><code>i = 7</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_face_10.png" width="400em">
+                    <p></p>
+                    <p><code>i = 10</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/part1pt8_face_20.png" width="400em">
+                    <p></p>
+                    <p><code>i = 20</code></p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/face.png" width="400em">
+                    <p></p>
+                    <p><code>Original</code></p>
+                </div>
+            </article>
+
+            <h4>1.7.2. Inpainting</h4>
+
+            <p>
+                Following the RePaint paper, we can use binary masks to inpaint images. We use the following:
+                \[
+                x_t \leftarrow \vec{m}x_t + (1 - \vec{m})\text{forward}(x_\text{orig}, t)
+                \]
+                This replaces everything in the edit mask alone, but replaces the rest of the image with the forward processed image.
+                We show the results below:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/inpainting_1.png" width="400em">
+                    <p></p>
+                    <p>Original</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/inpainting_mask.png" width="400em">
+                    <p></p>
+                    <p>Mask</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/inpainting_to_fill.png" width="400em">
+                    <p></p>
+                    <p>Area to Fill</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/inpainting_camp_final.png" width="400em">
+                    <p></p>
+                    <p>Inpainted Version</p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/ball.png" width="400em">
+                    <p></p>
+                    <p>Original</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/ball_mask.png" width="400em">
+                    <p></p>
+                    <p>Mask</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/ball_mask.jpg" width="400em">
+                    <p></p>
+                    <p>Area to Fill</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/ball_final.png" width="400em">
+                    <p></p>
+                    <p>Inpainted Version</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/ball_final2.png" width="400em">
+                    <p></p>
+                    <p>Inpainted Version 2</p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/tree.png" width="400em">
+                    <p></p>
+                    <p>Original</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/tree_mask.png" width="400em">
+                    <p></p>
+                    <p>Mask</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/tree_mask.jpg" width="400em">
+                    <p></p>
+                    <p>Area to Fill</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/tree_final1.png" width="400em">
+                    <p></p>
+                    <p>Inpainted Version</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/tree_final2.png" width="400em">
+                    <p></p>
+                    <p>Inpainted Version 2</p>
+                </div>
+            </article>
+
+            <h4>1.7.3. Text-Conditional Image-to-Image Translation</h4>
+
+            <p>
+                We now want to guide our image generation with a text prompt. This adds control to the manifold using
+                natural language, and specifically the text embedding space that we are sampling from. We replace
+                the "a high quality photo" prompt with "a rocket ship" and visualize the results below:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/camp_rock1.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 1</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camp_rock3.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 3</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camp_rock5.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 5</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camp_rock7.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 7</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camp_rock10.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 10</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/camp_rock20.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 20</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/original_campanile.png" width="400em">
+                    <p></p>
+                    <p>Original</p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/ball_rock1.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 1</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/ball_rock3.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 3</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/ball_rock5.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 5</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/ball_rock7.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 7</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/ball_rock10.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 10</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/ball_rock20.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 20</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/ball.png" width="400em">
+                    <p></p>
+                    <p>Original</p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/tree_rock1.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 1</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/tree_rock3.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 3</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/tree_rock5.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 5</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/tree_rock7.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 7</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/tree_rock10.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 10</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/tree_rock20.png" width="400em">
+                    <p></p>
+                    <p>Noise Level 20</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/tree.png" width="400em">
+                    <p></p>
+                    <p>Original</p>
+                </div>
+            </article>
+
+            <h4>1.8. Visual Anagrams</h4>
+
+            <p>
+                From here, we can do even more cool things and create visual illusions with diffusion!
+                One such example is visual anagrams, where originally an image might look like
+                <code>an oil painting of people around a campfire</code>, but flipped
+                it will look like <code>an oil painting of an old man</code>.
+                To do this, we will compute two noise estimates at each time-step, one for the original
+                image and one for the flipped image. We then combine these two noise estimates to create
+                the final noise estimate.
+                \[
+                \epsilon_1 = \text{U-Net}(x_t, t, p_1)
+                \]
+                \[
+                \epsilon_2 = \text{flip}(\text{U-Net}(\text{flip}(x_t), t, p_2))
+                \]
+                \[
+                \epsilon = (\epsilon_1 + \epsilon_2) / 2
+                \]
+                where $p_1$ and $p_2$ are the prompts for the original and flipped images, respectively.
+                Here are some results:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/anagram_man_fire.png" width="400em">
+                    <p></p>
+                    <p>an oil painting of people around a campfire</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/anagram_man_fire_flip.png" width="400em">
+                    <p></p>
+                    <p>an oil painting of an old man</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/anagram_man_fire2_flip.png" width="400em">
+                    <p></p>
+                    <p>an oil painting of people around a campfire</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/anagram_man_fire2.png" width="400em">
+                    <p></p>
+                    <p>an oil painting of an old man</p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/snow_coast.png" width="400em">
+                    <p></p>
+                    <p>an oil painting of a snowy mountain village</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/snow_coast_flip.png" width="400em">
+                    <p></p>
+                    <p>a photo of the amalfi coast</p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/barista_hat.png" width="400em">
+                    <p></p>
+                    <p>a photo of a hipster barista</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/barista_hat2.png" width="400em">
+                    <p></p>
+                    <p>a man wearing a hat</p>
+                </div>
+            </article>
+
+            <h4>1.9. Hybrid Images</h4>
+
+            <p>Finally, we can implement Factorized Diffusion and create hybrid images like in Project 2.
+            Here, we use the following:
+            \[
+            \epsilon_1 = \text{U-Net}(x_t, t, p_1)
+            \]
+            \[
+            \epsilon_2 = \text{U-Net}(x_t, t, p_2)
+            \]
+            \[
+            \epsilon = f_\text{lowpass}(\epsilon_1) + f_\text{highpass}(\epsilon_2)
+            \]
+
+            We use a Gaussian blur with kernel size $9$. Here are some results:</p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/skull_water.png" width="400em">
+                    <p></p>
+                    <p>a lithograph of a skull</p>
+                    <p>a lithograph of waterfalls</p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/city_man.png" width="400em">
+                    <p></p>
+                    <p>an oil painting of an old man</p>
+                    <p>an oil painting of a snowy mountain village</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/city_man2.png" width="400em">
+                    <p></p>
+                    <p>an oil painting of an old man</p>
+                    <p>an oil painting of a snowy mountain village</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/city_man3.png" width="400em">
+                    <p></p>
+                    <p>an oil painting of an old man</p>
+                    <p>an oil painting of a snowy mountain village</p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/hat_coast.png" width="400em">
+                    <p></p>
+                    <p>a man wearing a hat</p>
+                    <p>a photo of the amalfi coast</p>
+                </div>
+            </article>
+
+            <h2>Part B: Diffusion Models from Scratch!</h2>
+
+            <h3>Part 1: Training a Single-Step Denoising U-Net</h3>
+
+            <h4>1.1. Implementing the U-Net</h4>
+
+            <p>
+                We implement the simple building blocks for the U-Net, and perform
+                a few sanity checks within the code to ensure correctness. From here,
+                we are ready to train a one-step denoiser.
+            </p>
+
+            <h4>1.2. Using the U-Net to Train a Denoiser</h4>
+
+            <p>
+                We optimize over the objective:
+                \[
+                \mathcal{L} = \mathbb{E}_{z, x} ||D_\theta (z) - x ||^2
+                \]
+                and generate $z$ from $x$ as follows:
+                \[
+                z = x + \sigma \epsilon, \epsilon \sim \mathcal{N}(0, I)
+                \]
+                We show some training samples for the <code>NoisyMNIST</code> dataset
+                below:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/noisy_mnist.png" width="1000em">
+                    <p></p>
+                    <p>Noisy MNIST Dataset</p>
+                </div>
+            </article>
+
+            <h4>1.2.1. Training</h4>
+
+            <p>We train a denoiser to recover an image from noise level $\sigma = 0.5$. We use hidden dimension $d = 128$ and
+            Adam with learning rate $1e-4$. We show the training loss below:</p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/uncond_train_loss.png" width="1000em">
+                    <p></p>
+                    <p>One-Step Denoiser Training Loss</p>
+                </div>
+            </article>
+
+            <p>
+                We show some results below for the denoiser, once at epoch 1 and once at 5:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/uncond_epoch1.png" width="600em">
+                    <p></p>
+                    <p>Epoch 1</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/uncond_epoch5.png" width="600em">
+                    <p></p>
+                    <p>Epoch 5</p>
+                </div>
+            </article>
+
+            <h4>1.2.2. Out of Distribution Testing</h4>
+            <p>
+                We also evaluate how our denoiser does on other noise levels. Here are some results:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/uncond_ood.png" width="1000em">
+                    <p></p>
+                    <p>Out of distribution testing</p>
+                </div>
+            </article>
+
+            <h3>Part 2: Training a Diffusion Model</h3>
+
+            <h4>2.1. Adding Time-Conditioning to U-Net</h4>
+
+            <p>
+                From here, we want to train a full diffusion model. Instead of a separate U-Net model
+                for every time-step, we simply train it to be conditioned on the time-step. We
+                use $T = 300$ for the max time-steps and use a similar approach to Part A by adding
+                fully-connected blocks for embedding the time-step.
+            </p>
+
+            <h4>2.2. Training the U-Net</h4>
+
+            <p>We add an exponential learning rate scheduler, with a smaller learning rate of $1e-3$. Here is the training loss:</p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/time_train_loss.png" width="1000em">
+                    <p></p>
+                    <p>Time-Conditioned DDPM Training Loss</p>
+                </div>
+            </article>
+
+            <p>We also visualize some sampling results at epoch 5 and epoch 20.</p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/time_epoch5.png" width="1000em">
+                    <p></p>
+                    <p>Epoch 5</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/time_epoch20.png" width="1000em">
+                    <p></p>
+                    <p>Epoch 20</p>
+                </div>
+            </article>
+
+            <h4>2.4. Adding Class-Conditioning to U-Net</h4>
+
+            <p>The last thing left to do is add class-conditioning so we can prompt the U-Net to generate
+                a certain class of images. We use similar fully-connected blocks to embed the class one-hot label,
+                and zero it out with some probability so that the model can learn to ignore it.
+                Here is the training loss:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/class_train_losses.png" width="1000em">
+                    <p></p>
+                    <p>Class-Conditioned DDPM Training Loss</p>
+                </div>
+            </article>
+
+            <h4>2.5. Sampling from the Class-Conditioned U-Net</h4>
+
+            <p>
+                We use classifier-free guidance and sampling to visualize some results
+                ($\gamma = 5$):
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/class_epoch5.png" width="1000em">
+                    <p></p>
+                    <p>Epoch 5</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/class_epoch20.png" width="1000em">
+                    <p></p>
+                    <p>Epoch 20</p>
+                </div>
+            </article>
+
+            <p>
+                This was absolutely the coolest project I've ever done at Berkeley
+                and I'm so grateful to have had the opportunity to work on it.
+                I learned so much about diffusion holy moly thank you for creating
+                this!
+            </p>
+
+        </main>
+    </body>
+</html>
