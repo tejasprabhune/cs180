@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="color-scheme" content="light dark">
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.colors.min.css">
+        <link rel="stylesheet" href="index.css">
+        <script>
+            MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']]
+            }
+            };
+        </script>
+        <script type="text/javascript" id="MathJax-script" async
+            src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+        </script>
+
+
+        <title>CS 180 Projects</title>
+    </head>
+    <body>
+        <main class="container">
+            <h1>Final Project - NeRFs!</h1>
+
+            <h2>Fit a Neural Field to a 2D Image</h2>
+
+            <p>
+                We first start by trying to fit a neural field to a simple image. We build a positional
+                encoding using sines and cosines of the x and y coordinates, and then pass this through
+                an MLP-based neural network. Generally, this function is of the form:
+                \[
+                f: \mathbb{R}^2 \to \mathbb{R}^3
+                \]
+                \[
+                (u, v) \mapsto (r, g, b)
+                \]
+
+                We use 3 hidden layers with dimension 256, $L = 10$ for the positional encoding, 
+                and learning rate of 0.01. Results can be seen below:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/fox_0_0.png" width="400em">
+                    <p></p>
+                    <p>Iteration 0</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/fox_0_427.png" width="400em">
+                    <p></p>
+                    <p>Iteration 427</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/fox_0_854.png" width="400em">
+                    <p></p>
+                    <p>Iteration 854</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/fox_0_1281.png" width="400em">
+                    <p></p>
+                    <p>Iteration 1281</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/fox_0_1708.png" width="400em">
+                    <p></p>
+                    <p>Iteration 1708</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/fox.jpg" width="400em">
+                    <p></p>
+                    <p>Original</p>
+                </div>
+            </article>
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/golden_0.png" width="400em">
+                    <p></p>
+                    <p>Iteration 0</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/golden_451.png" width="400em">
+                    <p></p>
+                    <p>Iteration 451</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/golden_902.png" width="400em">
+                    <p></p>
+                    <p>Iteration 902</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/golden_1353.png" width="400em">
+                    <p></p>
+                    <p>Iteration 1353</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/golden_1804.png" width="400em">
+                    <p></p>
+                    <p>Iteration 1804</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/golden_2255.png" width="400em">
+                    <p></p>
+                    <p>Iteration 2255</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/golden.JPG" width="400em">
+                    <p></p>
+                    <p>Original</p>
+                </div>
+            </article>
+
+            <p>
+                We also tried varying the hyperparameters, with <code>hidden_dim = 128</code> and <code>L = 6</code>, which resulted
+                in significant degradation in the results, as a result of fewer parameters and expressive power of the network.
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/fox_1_0.png" width="400em">
+                    <p></p>
+                    <p>Iteration 0</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/fox_1_427.png" width="400em">
+                    <p></p>
+                    <p>Iteration 427</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/fox_1_854.png" width="400em">
+                    <p></p>
+                    <p>Iteration 854</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/fox_1_1281.png" width="400em">
+                    <p></p>
+                    <p>Iteration 1281</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/fox_1_1708.png" width="400em">
+                    <p></p>
+                    <p>Iteration 1708</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/fox.jpg" width="400em">
+                    <p></p>
+                    <p>Original</p>
+                </div>
+            </article>
+
+            <p>
+                Here are the PSNR plots for the fox and the golden gate image:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/wolf_psnr.png" width="800em">
+                    <p></p>
+                    <p>Fox PSNR</p>
+                </div>
+            </article>
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/golden_psnr.png" width="800em">
+                    <p></p>
+                    <p>Golden Gate PSNR</p>
+                </div>
+            </article>
+
+            <h2>Part 2: Fit a Neural Radiance Field from Multi-View Images</h2>
+
+            <p>
+                Now, we can try fitting a NeRF to the Lego example from the paper. We use the $R$ matrix
+                to map camera points to the world space. Similarly, we use the $K$ intrinsic matrix to
+                map pixels to the camera space. Finally, we use both of these functions to map each
+                pixel to a "ray", which define as an origin and a direction (we choose depth as 1).
+                We do this by taking the camera locations as $r_o$ for the origin and the direction $r_d$
+                by mapping pixels to the world space and normalizing the direction by finding the difference
+                between the world space and the origin.
+            </p>
+            <p>
+                We then sample rays from images during training and try to map $(u, v)$ to $(r, g, b, \sigma)$.
+                This output is then rendered as a volume using the approximation for $\hat{C}(r)$. You can see
+                the training results below:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/viser_view.png" width="1000em" style="background-color: white;">
+                    <p></p>
+                    <p>Camera Ray Visualization</p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/nerf_0.png" width="800em">
+                    <p></p>
+                    <p>Iteration 0</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/nerf_1.png" width="800em">
+                    <p></p>
+                    <p>Iteration 500</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/nerf_2.png" width="800em">
+                    <p></p>
+                    <p>Iteration 1000</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/nerf_3.png" width="800em">
+                    <p></p>
+                    <p>Iteration 1500</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/nerf_4.png" width="800em">
+                    <p></p>
+                    <p>Iteration 2000</p>
+                </div>
+            </article>
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/nerf_5.png" width="800em">
+                    <p></p>
+                    <p>Iteration 2500</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/nerf_6.png" width="800em">
+                    <p></p>
+                    <p>Iteration 3000</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/nerf_7.png" width="800em">
+                    <p></p>
+                    <p>Iteration 3500</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/nerf_8.png" width="800em">
+                    <p></p>
+                    <p>Iteration 4000</p>
+                </div>
+                <div class="jpg-images">
+                    <img src="images/nerf_9.png" width="800em">
+                    <p></p>
+                    <p>Iteration 4500</p>
+                </div>
+            </article> 
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/psnr.png" width="800em">
+                    <p></p>
+                    <p>NeRF PSNR</p>
+                </div>
+            </article>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/full.gif" width="800em">
+                    <p></p>
+                    <p>NeRF</p>
+                </div>
+            </article>
+        
+            <p>
+                Finally, we change the <code>vol_rend</code> function to output the per-point depths to the pixel depth
+                and then render the image using the depth map. This results in the following gif:
+            </p>
+
+            <article class="grid" class="jpg-section">
+                <div class="jpg-images">
+                    <img src="images/depth.gif" width="800em">
+                    <p></p>
+                    <p>NeRF</p>
+                </div>
+            </article>
+        </main>
+    </body>
+</html>
